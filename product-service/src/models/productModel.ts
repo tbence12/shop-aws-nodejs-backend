@@ -1,11 +1,9 @@
-type ProductId = string;
+export type ProductId = string;
 
-type Product = {
+export type Product = {
   description: string
   id: ProductId
   price: number
   title: string
   count: number
 };
-
-export { Product, ProductId };
