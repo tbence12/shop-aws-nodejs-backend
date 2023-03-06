@@ -26,6 +26,25 @@ const put = async (item: DBProduct | DBStock, table: string) => {
   }).promise();
 }
 
+const transactWrite = async (item1: DBProduct, table1: string, item2: DBStock, table2: string) => {
+  return dynamo.transactWrite({
+    TransactItems: [
+      {
+        Put: {
+          Item: item1,
+          TableName: process.env[table1],
+        }
+      },
+      {
+        Put: {
+          Item: item2,
+          TableName: process.env[table2],
+        }
+      }
+    ]
+  }).promise();
+}
+
 const mergeProductAndStockItems = (productItems, stockItems) => {
   return productItems.map(product => {
     const stock = stockItems.find(stock => stock.product_id === product.id );
@@ -53,7 +72,6 @@ export class ProductService {
   static async createProduct(product: Product): Promise<void> {
     const { count, ...productItem } = product;
     const stockItem = { product_id: product.id, count};
-    await put(productItem, 'PRODUCTS_TABLE_NAME');
-    await put(stockItem, 'STOCKS_TABLE_NAME');
+    await transactWrite(productItem, 'PRODUCTS_TABLE_NAME', stockItem, 'STOCKS_TABLE_NAME')
   }
 }
