@@ -3,6 +3,7 @@ import { middyfy } from '@libs/lambda';
 import { ProductService } from 'src/services/productService';
 
 const getProductById = async (event) => {
+  console.log('[getProductById] called, arguments: ', JSON.stringify(event.pathParameters));
   const { productId } = event.pathParameters;
   try {
     const product = await ProductService.getProductById(productId);

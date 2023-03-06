@@ -2,6 +2,11 @@ import type { AWS } from '@serverless/typescript';
 
 import getProductsList from '@functions/getProductsList';
 import getProductById from '@functions/getProductById';
+import createProduct from '@functions/createProduct';
+
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const serverlessConfiguration: AWS = {
   service: 'product-service',
@@ -18,10 +23,17 @@ const serverlessConfiguration: AWS = {
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
+      PRODUCTS_TABLE_NAME: process.env.PRODUCTS_TABLE_NAME,
+      STOCKS_TABLE_NAME: process.env.STOCKS_TABLE_NAME,
     },
+    iam: {
+      role: {
+        managedPolicies: ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
+      }
+    }
   },
   // import the function via paths
-  functions: { getProductsList, getProductById },
+  functions: { getProductsList, getProductById, createProduct },
   package: { individually: true },
   custom: {
     esbuild: {
@@ -35,7 +47,7 @@ const serverlessConfiguration: AWS = {
       concurrency: 10,
     },
     autoswagger: {
-      generateSwaggerOnDeploy: false,
+      generateSwaggerOnDeploy: true,
       typefiles: ['./src/models/productModel.ts'],
       basePath: '/dev',
       host: 'bnd9i5exw3.execute-api.eu-central-1.amazonaws.com'
