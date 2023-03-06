@@ -3,6 +3,7 @@ import { middyfy } from '@libs/lambda';
 import { ProductService } from 'src/services/productService';
 
 export const getProductsList = async () => {
+  console.log('[getProductsList] called');
   try {
     const products = await ProductService.getProducts();
     return formatJSONResponse(products);
