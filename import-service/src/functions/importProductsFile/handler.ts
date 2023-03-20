@@ -1,19 +1,20 @@
 import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
-import * as AWS from 'aws-sdk';
+import { S3 } from '@libs/s3-functions';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export const importProductsFile = async (event) => {
   console.log('[importProductsFile] called, arguments: ', JSON.stringify(event.queryStringParameters));
 
-  const queryParams = event.queryStringParameters;
+  const { name } = event.queryStringParameters;
 
-  if (!queryParams?.name) {
+  if (!name) {
     return formatJSONResponse('Not found "name" query parameter', 400);
   }
 
-  const { name } = queryParams;
-  const S3 = new AWS.S3({region: 'eu-central-1'});
-  const bucket = 'js-shop-react-redux-uploaded';
+  const bucket = process.env.BUCKET;
   const key = `uploaded/${name}`;
 
   const params = {

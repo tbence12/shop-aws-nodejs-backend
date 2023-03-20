@@ -1,13 +1,14 @@
 import middy from '@middy/core';
 import { fileParseAndMove } from '@libs/s3-functions';
-import * as AWS from 'aws-sdk';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export const importFileParser = async (event) => {
   console.log('[importFileParser] called, arguments: ', JSON.stringify(event));
-
-  const S3 = new AWS.S3({region: 'eu-central-1'});
+  
   const key = decodeURIComponent(event.Records[0].s3.object.key);
-  const bucket = 'js-shop-react-redux-uploaded';
+  const bucket = process.env.BUCKET;
 
   const params = {
     Bucket: bucket,
@@ -15,7 +16,7 @@ export const importFileParser = async (event) => {
   }
 
   try {
-    await fileParseAndMove(S3, params);
+    await fileParseAndMove(params);
   } catch (error) {
     console.log(error);
   }

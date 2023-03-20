@@ -3,6 +3,10 @@ import type { AWS } from '@serverless/typescript';
 import importProductsFile from '@functions/importProductsFile';
 import importFileParser from '@functions/importFileParser';
 
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 const serverlessConfiguration: AWS = {
   service: 'import-service',
   frameworkVersion: '3',
@@ -18,6 +22,8 @@ const serverlessConfiguration: AWS = {
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
+      REGION: process.env.REGION,
+      BUCKET: process.env.BUCKET
     },
     iam: {
       role: {

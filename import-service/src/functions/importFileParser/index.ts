@@ -1,11 +1,14 @@
 import { handlerPath } from '@libs/handler-resolver';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
   events: [
     {
       s3: {
-        bucket: 'js-shop-react-redux-uploaded',
+        bucket: process.env.BUCKET,
         event: 's3:ObjectCreated:*',
         rules: [
           {

@@ -1,9 +1,16 @@
+import * as AWS from 'aws-sdk';
 import { S3Client, DeleteObjectCommand, CopyObjectCommand } from "@aws-sdk/client-s3";
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const csv = require('csv-parser');
 
-const parseFile = async (S3, params) => {
-  return new Promise<void>(async (resolve, reject) => {
+export const S3 = new AWS.S3({region: process.env.REGION});
+const S3client = new S3Client({region: process.env.REGION});
+
+const parseFile = (params) => {
+  return new Promise<void>( (resolve, reject) => {
     const S3Stream = S3.getObject(params).createReadStream();
     const { Bucket, Key } = params;
 
@@ -23,7 +30,7 @@ const parseFile = async (S3, params) => {
   });
 }
 
-const copyParsedFile = async (S3, params) => {
+const copyParsedFile = (params) => {
   return new Promise<void>(async (resolve, reject) => {
     const { Bucket, Key } = params;
 
@@ -34,7 +41,7 @@ const copyParsedFile = async (S3, params) => {
     }
 
     try {
-      await S3.send(new CopyObjectCommand(copyParams));
+      await S3client.send(new CopyObjectCommand(copyParams));
       resolve();
     } catch (error) {
       reject(error);
@@ -42,10 +49,10 @@ const copyParsedFile = async (S3, params) => {
   });
 }
 
-const deleteParsedFile = async (S3, params) => {
+const deleteParsedFile = (params) => {
   return new Promise<void>(async (resolve, reject) => {
     try {
-      await S3.send(new DeleteObjectCommand(params));
+      await S3client.send(new DeleteObjectCommand(params));
       resolve();
     } catch (error) {
       reject(error);
@@ -54,12 +61,11 @@ const deleteParsedFile = async (S3, params) => {
 }
 
 const moveFile = async (params) => {
-  const S3 = new S3Client({ region: 'eu-central-1' });
-  await copyParsedFile(S3, params);
-  await deleteParsedFile(S3, params);
+  await copyParsedFile(params);
+  await deleteParsedFile(params);
 }
 
-export const fileParseAndMove = async (S3, params) => {
-  await parseFile(S3, params);
+export const fileParseAndMove = async (params) => {
+  await parseFile(params);
   await moveFile(params);
 }
