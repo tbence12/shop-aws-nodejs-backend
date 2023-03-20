@@ -37,6 +37,11 @@ const serverlessConfiguration: AWS = {
             Effect: 'Allow',
             Action: ['s3:*'],
             Resource: ['arn:aws:s3:::js-shop-react-redux-uploaded/*']
+          },
+          {
+            Effect: 'Allow',
+            Action: ['sqs:*'],
+            Resource: ['arn:aws:sqs:${self:provider.region}:${aws:accountId}:catalogItemsQueue']
           }
         ]
       }

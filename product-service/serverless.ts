@@ -3,6 +3,7 @@ import type { AWS } from '@serverless/typescript';
 import getProductsList from '@functions/getProductsList';
 import getProductById from '@functions/getProductById';
 import createProduct from '@functions/createProduct';
+import catalogBatchProcess from '@functions/catalogBatchProcess';
 
 import * as dotenv from 'dotenv';
 
@@ -25,15 +26,23 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       PRODUCTS_TABLE_NAME: process.env.PRODUCTS_TABLE_NAME,
       STOCKS_TABLE_NAME: process.env.STOCKS_TABLE_NAME,
+      QUEUE_URL: process.env.QUEUE_URL,
+
     },
     iam: {
       role: {
-        managedPolicies: ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
+        managedPolicies: ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
+        statements: [
+          {
+            Effect: 'Allow',
+            Action: ['sns:Publish'],
+            Resource: { Ref: 'SNSTopic' }
+          }
+        ]
       }
     }
   },
-  // import the function via paths
-  functions: { getProductsList, getProductById, createProduct },
+  functions: { getProductsList, getProductById, createProduct, catalogBatchProcess },
   package: { individually: true },
   custom: {
     esbuild: {
@@ -53,6 +62,45 @@ const serverlessConfiguration: AWS = {
       host: 'bnd9i5exw3.execute-api.eu-central-1.amazonaws.com'
     }
   },
+  resources: {
+    Resources: {
+      SQSQueue: {
+        Type: 'AWS::SQS::Queue',
+        Properties: {
+          QueueName: 'catalogItemsQueue'
+        }
+      },
+      SNSTopic: {
+        Type: 'AWS::SNS::Topic',
+        Properties: {
+          TopicName: 'createProductTopic'
+        }
+      },
+      SNSSubscription: {
+        Type: 'AWS::SNS::Subscription',
+        Properties: {
+          Endpoint: 'bence_turi1@epam.com',
+          Protocol: 'email',
+          TopicArn: {
+            Ref: 'SNSTopic'
+          }
+        }
+      },
+      SNSFilteredByPriceSubscription: {
+        Type: 'AWS::SNS::Subscription',
+        Properties: {
+          Endpoint: 'turi.b12@gmail.com',
+          Protocol: 'email',
+          TopicArn: {
+            Ref: 'SNSTopic'
+          },
+          FilterPolicy: {
+            'price': [{'numeric': ['>=', 15]}]
+          }
+        }
+      }
+    }
+  }
 };
 
 module.exports = serverlessConfiguration;
