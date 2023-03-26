@@ -23,7 +23,8 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       REGION: process.env.REGION,
-      BUCKET: process.env.BUCKET
+      BUCKET: process.env.BUCKET,
+      QUEUE_URL: process.env.QUEUE_URL
     },
     iam: {
       role: {
@@ -37,6 +38,11 @@ const serverlessConfiguration: AWS = {
             Effect: 'Allow',
             Action: ['s3:*'],
             Resource: ['arn:aws:s3:::js-shop-react-redux-uploaded/*']
+          },
+          {
+            Effect: 'Allow',
+            Action: ['sqs:*'],
+            Resource: ['arn:aws:sqs:${self:provider.region}:${aws:accountId}:catalogItemsQueue']
           }
         ]
       }

@@ -1,5 +1,5 @@
+import middy from '@middy/core';
 import { formatJSONResponse } from '@libs/api-gateway';
-import { middyfy } from '@libs/lambda';
 import { ProductService } from 'src/services/productService';
 
 export const getProductsList = async () => {
@@ -12,4 +12,4 @@ export const getProductsList = async () => {
   }
 };
 
-export const main = middyfy(getProductsList);
+export const main = middy(getProductsList);

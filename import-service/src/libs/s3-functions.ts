@@ -1,13 +1,16 @@
 import * as AWS from 'aws-sdk';
 import { S3Client, DeleteObjectCommand, CopyObjectCommand } from "@aws-sdk/client-s3";
+import {SendMessageCommand, SQSClient} from '@aws-sdk/client-sqs';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 const csv = require('csv-parser');
 
-export const S3 = new AWS.S3({region: process.env.REGION});
-const S3client = new S3Client({region: process.env.REGION});
+const region = process.env.REGION;
+export const S3 = new AWS.S3({ region });
+const S3client = new S3Client({ region });
+const sqsClient = new SQSClient({ region });
 
 const parseFile = (params) => {
   return new Promise<void>( (resolve, reject) => {
@@ -17,7 +20,10 @@ const parseFile = (params) => {
     S3Stream
       .pipe(csv())
       .on('data', data => {
-        console.log(`${Bucket}: ${Key}`, data);
+        sqsClient.send(new SendMessageCommand({
+          QueueUrl: process.env.QUEUE_URL,
+          MessageBody: JSON.stringify(data)
+        }));
       })
       .on('error', error => {
         console.log(`${Bucket}: ${Key} error: `, error);

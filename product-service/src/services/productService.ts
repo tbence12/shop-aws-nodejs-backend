@@ -1,7 +1,12 @@
 import { DBProduct, DBStock, Product, ProductId } from "src/models/productModel";
-
 import * as AWS from 'aws-sdk';
+import {PublishCommand, SNSClient} from '@aws-sdk/client-sns';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 const dynamo = new AWS.DynamoDB.DocumentClient();
+const snsClient = new SNSClient({ region: process.env.REGION });
 
 const scan = async (table: string) => {
   const scanResults = await dynamo.scan({
@@ -48,7 +53,11 @@ const transactWrite = async (item1: DBProduct, table1: string, item2: DBStock, t
 const mergeProductAndStockItems = (productItems, stockItems) => {
   return productItems.map(product => {
     const stock = stockItems.find(stock => stock.product_id === product.id );
-    return {...product, count: stock.count};
+    if(stock) {
+      return {...product, count: stock.count};
+    } else {
+      return {...product, count: 0};
+    }
   });
 }
 
@@ -72,6 +81,19 @@ export class ProductService {
   static async createProduct(product: Product): Promise<void> {
     const { count, ...productItem } = product;
     const stockItem = { product_id: product.id, count};
-    await transactWrite(productItem, 'PRODUCTS_TABLE_NAME', stockItem, 'STOCKS_TABLE_NAME')
+    await transactWrite(productItem, 'PRODUCTS_TABLE_NAME', stockItem, 'STOCKS_TABLE_NAME');
   }
+
+  static async sendProductCreationNotifications(product: Product): Promise<void> {
+    const publishCommandInput = {
+      Subject: '[AWS-React product-service] - Product creation is successful',
+      Message: `New product "${product.title}" was created.`,
+      TopicArn: process.env.SNS_ARN,
+      MessageAttributes: {
+        'description': { DataType: 'String', StringValue: product.description },
+        'price': { DataType: 'Number', StringValue: Number(product.price).toString() }
+      }
+    };
+    await snsClient.send(new PublishCommand(publishCommandInput));
+  };
 }
