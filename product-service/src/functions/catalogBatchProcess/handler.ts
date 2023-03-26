@@ -1,4 +1,4 @@
-import { middyfy } from '@libs/lambda';
+import middy from '@middy/core';
 import { productValidator } from '@libs/validator';
 import { ProductService } from 'src/services/productService';
 
@@ -15,6 +15,7 @@ const catalogBatchProcess = async (event) => {
       }
 
       const product = validatedProduct.body;
+      product.count = +product.count;
       await ProductService.createProduct(product);
       await ProductService.sendProductCreationNotifications(product);
     }
@@ -23,4 +24,4 @@ const catalogBatchProcess = async (event) => {
   }
 };
 
-export const main = middyfy(catalogBatchProcess);
+export const main = middy(catalogBatchProcess);

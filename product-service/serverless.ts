@@ -27,7 +27,7 @@ const serverlessConfiguration: AWS = {
       PRODUCTS_TABLE_NAME: process.env.PRODUCTS_TABLE_NAME,
       STOCKS_TABLE_NAME: process.env.STOCKS_TABLE_NAME,
       QUEUE_URL: process.env.QUEUE_URL,
-
+      SNS_ARN: process.env.SNS_ARN,
     },
     iam: {
       role: {
@@ -35,7 +35,12 @@ const serverlessConfiguration: AWS = {
         statements: [
           {
             Effect: 'Allow',
-            Action: ['sns:Publish'],
+            Action: ['sqs:*'],
+            Resource: { 'Fn::GetAtt': ['SQSQueue', 'Arn'] }
+          },
+          {
+            Effect: 'Allow',
+            Action: ['sns:*'],
             Resource: { Ref: 'SNSTopic' }
           }
         ]

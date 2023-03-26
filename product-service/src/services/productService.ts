@@ -53,7 +53,11 @@ const transactWrite = async (item1: DBProduct, table1: string, item2: DBStock, t
 const mergeProductAndStockItems = (productItems, stockItems) => {
   return productItems.map(product => {
     const stock = stockItems.find(stock => stock.product_id === product.id );
-    return {...product, count: stock.count};
+    if(stock) {
+      return {...product, count: stock.count};
+    } else {
+      return {...product, count: 0};
+    }
   });
 }
 
@@ -77,7 +81,7 @@ export class ProductService {
   static async createProduct(product: Product): Promise<void> {
     const { count, ...productItem } = product;
     const stockItem = { product_id: product.id, count};
-    await transactWrite(productItem, 'PRODUCTS_TABLE_NAME', stockItem, 'STOCKS_TABLE_NAME')
+    await transactWrite(productItem, 'PRODUCTS_TABLE_NAME', stockItem, 'STOCKS_TABLE_NAME');
   }
 
   static async sendProductCreationNotifications(product: Product): Promise<void> {
