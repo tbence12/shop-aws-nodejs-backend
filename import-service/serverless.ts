@@ -24,7 +24,8 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       REGION: process.env.REGION,
       BUCKET: process.env.BUCKET,
-      QUEUE_URL: process.env.QUEUE_URL
+      QUEUE_URL: process.env.QUEUE_URL,
+      AUTHORIZER_ARN: process.env.AUTHORIZER_ARN,
     },
     iam: {
       role: {
