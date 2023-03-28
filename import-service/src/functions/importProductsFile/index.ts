@@ -10,6 +10,7 @@ export default {
       http: {
         method: 'get',
         path: '/import',
+        cors: true,
         authorizer: {
           arn: process.env.AUTHORIZER_ARN,
           type: 'request',
